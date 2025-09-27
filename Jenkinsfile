@@ -1,37 +1,46 @@
 pipeline {
     agent {
-        docker { image 'node:20' } // Official Node.js image
+        docker { image 'node:20' }
+    }
+    options {
+        skipDefaultCheckout() // Avoid Jenkins trying an automatic checkout
     }
     stages {
         stage('Checkout') {
             steps {
-                // Ensure workspace is clean and cloned properly
-                checkout([$class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/9999-san/8.2CDevSecOps.git'
-                    ]]
-                ])
+                // Explicit clone, ensures .git exists
+                sh 'git clone -b main https://github.com/9999-san/8.2CDevSecOps.git repo'
+                dir('repo') {
+                    sh 'git status' // Confirm repo exists
+                }
             }
         }
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                dir('repo') {
+                    sh 'npm install'
+                }
             }
         }
         stage('Run Tests') {
             steps {
-                sh 'npm test || true'
+                dir('repo') {
+                    sh 'npm test || true'
+                }
             }
         }
         stage('Generate Coverage Report') {
             steps {
-                sh 'npm run coverage || true'
+                dir('repo') {
+                    sh 'npm run coverage || true'
+                }
             }
         }
         stage('NPM Audit (Security Scan)') {
             steps {
-                sh 'npm audit || true'
+                dir('repo') {
+                    sh 'npm audit || true'
+                }
             }
         }
     }
