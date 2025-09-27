@@ -1,11 +1,17 @@
 pipeline {
     agent {
-        docker { image 'node:20' } // use an official Node.js image
+        docker { image 'node:20' } // Official Node.js image
     }
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/9999-san/8.2CDevSecOps'
+                // Ensure workspace is clean and cloned properly
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/9999-san/8.2CDevSecOps.git'
+                    ]]
+                ])
             }
         }
         stage('Install Dependencies') {
